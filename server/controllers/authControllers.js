@@ -65,11 +65,7 @@ message:error.message
 
 };
 
-module.exports={
-
-register
-
-};
+// exports consolidated at end
 const login = async (req, res) => {
     try {
 
