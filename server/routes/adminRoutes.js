@@ -8,7 +8,7 @@ const authorize = require("../middleware/roleMiddleware");
 
 const {
     getAllUsers
-} = require("../controllers/adminController");
+} = require("../controllers/adminControllers");
 
 router.get(
     "/users",
