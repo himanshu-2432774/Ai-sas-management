@@ -8,7 +8,7 @@ const {
     getMe
 } = require("../controllers/authControllers");
 
-const protect = require("../middleware/authMiddleware");
+const protect = require("../middleware/authmiddleware");
 
 router.post("/register", register);
 
