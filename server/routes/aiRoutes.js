@@ -11,8 +11,12 @@ router.post(
     checkCredits,
     async (req, res) => {
 
+        req.userData.credits -= 1;
+
+        await req.userData.save();
+
         res.status(200).json({
-            message: "AI request allowed",
+            message: "AI request successful",
             remainingCredits: req.userData.credits
         });
 
