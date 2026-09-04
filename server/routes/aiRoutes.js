@@ -1,15 +1,26 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect } = require("../middleware/authmiddleware");
+const { protect } = require("../middleware/authmiddleware.js");
 const checkCredits = require("../middleware/creditMiddleware");
-const { generateAI } = require("../controllers/aiController");
+
+const {
+    generateAI,
+    generateResume
+} = require("../controllers/aiController");
 
 router.post(
     "/generate",
     protect,
     checkCredits,
     generateAI
+);
+
+router.post(
+    "/resume",
+    protect,
+    checkCredits,
+    generateResume
 );
 
 module.exports = router;
