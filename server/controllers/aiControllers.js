@@ -1,3 +1,5 @@
+const Usage = require("../models/Usage");
+
 const generateAI = async (req, res) => {
     try {
         const { prompt } = req.body;
@@ -19,6 +21,16 @@ const generateAI = async (req, res) => {
         This response is generated locally for testing
         because the real AI API is currently unavailable.
         `;
+
+        // Save AI usage
+        await Usage.create({
+            user: req.user.id,
+            service: "AI Chat",
+            prompt: prompt,
+            response: aiResponse,
+            creditsUsed: 1,
+            status: "success"
+        });
 
         // Deduct 1 credit
         req.userData.credits -= 1;
@@ -68,6 +80,27 @@ const generateResume = async (req, res) => {
             experience: experience || "Fresher",
             projects: projects || "No projects provided"
         };
+        // Save Resume usage
+await Usage.create({
+    user: req.user.id,
+    service: "Resume Generator",
+    prompt: JSON.stringify(req.body),
+    response: JSON.stringify(resume),
+    creditsUsed: 1,
+    status: "success"
+});
+req.userData.credits -= 1;
+await req.userData.save();
+
+        // Save Resume usage
+        await Usage.create({
+            user: req.user.id,
+            service: "Resume Generator",
+            prompt: JSON.stringify(req.body),
+            response: JSON.stringify(resume),
+            creditsUsed: 1,
+            status: "success"
+        });
 
         // Deduct 1 credit
         req.userData.credits -= 1;
@@ -88,6 +121,9 @@ const generateResume = async (req, res) => {
         });
     }
 };
+
+
 module.exports = {
-    generateAI
+    generateAI,
+    generateResume
 };
