@@ -45,3 +45,5 @@ const aiRoutes = require("./routes/aiRoutes");
 app.use("/api/ai", aiRoutes);
 const usageRoutes = require("./routes/usageRoutes");
 app.use("/api/usage", usageRoutes);
+const adminUserRoutes = require("./routes/adminUserRoutes");
+app.use("/api/admin", adminUserRoutes);
