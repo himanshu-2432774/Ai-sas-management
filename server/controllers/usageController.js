@@ -49,6 +49,7 @@ const getUsageStats = async (req, res) => {
             aiChatRequests,
             resumeRequests
         });
+        
 
     } catch (error) {
         res.status(500).json({
