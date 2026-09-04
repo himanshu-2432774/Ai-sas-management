@@ -47,3 +47,5 @@ const usageRoutes = require("./routes/usageRoutes");
 app.use("/api/usage", usageRoutes);
 const adminUserRoutes = require("./routes/adminUserRoutes");
 app.use("/api/admin", adminUserRoutes);
+const adminStatsRoutes = require("./routes/adminStatsRoutes");
+app.use("/api/admin", adminStatsRoutes);
