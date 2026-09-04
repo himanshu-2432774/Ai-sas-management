@@ -15,6 +15,7 @@ const getProfile = async (req, res) => {
             message: "Profile fetched successfully",
             user
         });
+        
 
     } catch (error) {
         res.status(500).json({
