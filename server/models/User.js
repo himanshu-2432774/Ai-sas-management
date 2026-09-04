@@ -26,15 +26,16 @@ const userSchema = new mongoose.Schema({
         default:"user"
     },
 
-    plan:{
-        type:String,
-        default:"free"
-    },
+   plan: {
+    type: String,
+    enum: ["free", "basic", "pro"],
+    default: "free"
+},
 
-    credits:{
-        type:Number,
-        default:10
-    }
+credits: {
+    type: Number,
+    default: 10
+}
 
 },
 {
