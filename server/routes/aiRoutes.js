@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect } = require("../middleware/authmiddleware.js");
+const protect = require("../middleware/authmiddleware.js");
 const checkCredits = require("../middleware/creditMiddleware");
 
 const {
     generateAI,
     generateResume
-} = require("../controllers/aiController");
+} = require("../controllers/aicontrollers");
 
 router.post(
     "/generate",
