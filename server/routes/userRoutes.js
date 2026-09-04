@@ -2,7 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-const protect = require("../middleware/authmiddleware");
+const protect = require("../middleware/authmiddleware.js");
 
 const {
     getProfile,
