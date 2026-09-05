@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const checkSubscription = require("../middleware/subscriptionMiddleware");
 
 const protect = require("../middleware/authmiddleware.js");
 const checkCredits = require("../middleware/creditMiddleware");
@@ -13,6 +14,7 @@ router.post(
     "/generate",
     protect,
     checkCredits,
+    checkSubscription,
     generateAI
 );
 
@@ -20,6 +22,7 @@ router.post(
     "/resume",
     protect,
     checkCredits,
+    checkSubscription,
     generateResume
 );
 
