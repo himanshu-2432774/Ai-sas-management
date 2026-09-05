@@ -35,8 +35,23 @@ const userSchema = new mongoose.Schema({
 credits: {
     type: Number,
     default: 10
-}
+},
+subscriptionStatus: {
+    type: String,
+    enum: ["active", "expired"],
+    default: "active"
+},
 
+subscriptionStartDate: {
+    type: Date,
+    default: Date.now
+},
+
+subscriptionEndDate: {
+    type: Date,
+    default: null
+
+},
 },
 {
     timestamps:true
