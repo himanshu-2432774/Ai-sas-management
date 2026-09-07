@@ -49,3 +49,7 @@ const adminUserRoutes = require("./routes/adminUserRoutes");
 app.use("/api/admin", adminUserRoutes);
 const adminStatsRoutes = require("./routes/adminStatsRoutes");
 app.use("/api/admin", adminStatsRoutes);
+const adminPlanRoutes = require("./routes/adminPlanRoutes");
+app.use("/api/admin", adminPlanRoutes);
+const errorHandler = require("./middleware/errorMiddleware");
+app.use(errorHandler);
