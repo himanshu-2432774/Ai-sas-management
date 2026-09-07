@@ -4,25 +4,65 @@ const User = require("../models/User");
 // Get all users
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find()
+        const {
+            search = "",
+            role,
+            page = 1,
+            limit = 10
+        } = req.query;
+
+        const skip = (page - 1) * limit;
+
+        const filter = {};
+
+        // Search by name or email
+        if (search) {
+            filter.$or = [
+                {
+                    name: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
+                {
+                    email: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                }
+            ];
+        }
+
+        // Filter by role
+        if (role) {
+            filter.role = role;
+        }
+
+        const users = await User.find(filter)
             .select("-password")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(Number(limit));
+
+        const totalUsers = await User.countDocuments(filter);
 
         res.status(200).json({
-            message: "All users fetched successfully",
-            count: users.length,
+            message: "Users fetched successfully",
+            totalUsers,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalUsers / limit),
             users
         });
 
     } catch (error) {
+        console.error("Get Users Error:", error);
+
         res.status(500).json({
             message: "Failed to fetch users",
             error: error.message
         });
     }
 };
-
-
 // Get single user
 const getUserById = async (req, res) => {
     try {
