@@ -1,5 +1,6 @@
 const User = require("../models/User");
 
+
 const updateUserPlan = async (req, res) => {
     try {
         const { plan } = req.body;
@@ -24,8 +25,16 @@ const updateUserPlan = async (req, res) => {
             });
         }
 
+        const startDate = new Date();
+
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
+
         user.plan = plan;
         user.credits = planCredits[plan];
+        user.subscriptionStatus = "active";
+        user.subscriptionStartDate = startDate;
+        user.subscriptionEndDate = endDate;
 
         await user.save();
 
@@ -36,7 +45,10 @@ const updateUserPlan = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 plan: user.plan,
-                credits: user.credits
+                credits: user.credits,
+                subscriptionStatus: user.subscriptionStatus,
+                subscriptionStartDate: user.subscriptionStartDate,
+                subscriptionEndDate: user.subscriptionEndDate
             }
         });
 
@@ -52,4 +64,4 @@ const updateUserPlan = async (req, res) => {
 
 module.exports = {
     updateUserPlan
-}; 
+};
