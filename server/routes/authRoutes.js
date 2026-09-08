@@ -7,11 +7,16 @@ const {
     login,
     getMe,
     forgotPassword,
-    resetPassword
-} = require("../controllers/authControllers.js");
+    resetPassword,
+    resendVerification
+} = require("../controllers/authController");
+
 
 const protect = require("../middleware/authmiddleware.js");
-
+router.post(
+    "/resend-verification",
+    resendVerification
+);
 router.post("/register", register);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
