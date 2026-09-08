@@ -214,6 +214,7 @@ const login = async (req, res) => {
     }
 };
 
+
 const getMe = async (req, res) => {
     try {
 
@@ -238,11 +239,61 @@ const getMe = async (req, res) => {
 
     }
 };
+const resendVerification = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                message: "Email is required"
+            });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        if (user.isVerified) {
+            return res.status(400).json({
+                message: "Email is already verified"
+            });
+        }
+
+        const verificationToken = crypto
+            .randomBytes(32)
+            .toString("hex");
+
+        user.emailVerificationToken = verificationToken;
+
+        user.emailVerificationExpire =
+            new Date(Date.now() + 15 * 60 * 1000);
+
+        await user.save();
+
+        res.status(200).json({
+            message: "Verification token generated successfully",
+            verificationToken
+        });
+
+    } catch (error) {
+        console.error("Resend Verification Error:", error);
+
+        res.status(500).json({
+            message: "Failed to resend verification email"
+        });
+    }
+};
 
 module.exports = {
     register,
     login,
     getMe,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    resendVerification
 };
+
