@@ -188,6 +188,11 @@ const login = async (req, res) => {
                 message: "Invalid Credentials"
             });
         }
+        if (!user.isVerified) {
+    return res.status(403).json({
+        message: "Please verify your email before logging in"
+    });
+}
 
         const token = jwt.sign(
             {
@@ -287,6 +292,47 @@ const resendVerification = async (req, res) => {
         });
     }
 };
+const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return res.status(400).json({
+                message: "Verification token is required"
+            });
+        }
+
+        const user = await User.findOne({
+            emailVerificationToken: token,
+            emailVerificationExpire: {
+                $gt: new Date()
+            }
+        });
+
+        if (!user) {
+            return res.status(400).json({
+                message: "Invalid or expired verification token"
+            });
+        }
+
+        user.isVerified = true;
+        user.emailVerificationToken = null;
+        user.emailVerificationExpire = null;
+
+        await user.save();
+
+        res.status(200).json({
+            message: "Email verified successfully"
+        });
+
+    } catch (error) {
+        console.error("Verify Email Error:", error);
+
+        res.status(500).json({
+            message: "Email verification failed"
+        });
+    }
+};
 
 module.exports = {
     register,
@@ -294,6 +340,8 @@ module.exports = {
     getMe,
     forgotPassword,
     resetPassword,
+    verifyEmail,
     resendVerification
 };
 
+    
