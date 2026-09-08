@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const crypto = require("crypto");
 
@@ -243,10 +242,7 @@ const getMe = async (req, res) => {
 module.exports = {
     register,
     login,
-    getMe
-};
-module.exports = {
-    // existing functions...
+    getMe,
     forgotPassword,
     resetPassword
 };
