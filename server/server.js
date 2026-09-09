@@ -28,6 +28,8 @@ app.use("/api", apiLimiter);
 // ======================
 // Routes
 // ======================
+const v1Routes = require("./routes/v1");
+app.use("/api/v1", v1Routes);
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
