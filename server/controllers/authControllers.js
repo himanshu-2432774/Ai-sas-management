@@ -161,10 +161,8 @@ message:error.message
 
 };
 
-// exports consolidated at end
 const login = async (req, res) => {
     try {
-
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -188,11 +186,18 @@ const login = async (req, res) => {
                 message: "Invalid Credentials"
             });
         }
+
+        if (!user.isActive) {
+            return res.status(403).json({
+                message: "Your account is deactivated"
+            });
+        }
+
         if (!user.isVerified) {
-    return res.status(403).json({
-        message: "Please verify your email before logging in"
-    });
-}
+            return res.status(403).json({
+                message: "Please verify your email before logging in"
+            });
+        }
 
         const token = jwt.sign(
             {
@@ -209,13 +214,10 @@ const login = async (req, res) => {
             message: "Login Successful",
             token
         });
-
     } catch (error) {
-
         res.status(500).json({
             message: error.message
         });
-
     }
 };
 
