@@ -28,7 +28,9 @@ app.use("/api", apiLimiter);
 // ======================
 // Routes
 // ======================
-
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
@@ -75,6 +77,8 @@ app.get("/", (req, res) => {
 const errorHandler = require("./middleware/errorMiddleware");
 
 app.use(errorHandler);
+
+
 
 
 // ======================
