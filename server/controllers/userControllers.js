@@ -147,10 +147,38 @@ const deleteAccount = async (req, res) => {
         });
     }
 };
+const deactivateAccount = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        user.isActive = false;
+
+        await user.save();
+
+        res.status(200).json({
+            message: "Account deactivated successfully"
+        });
+
+    } catch (error) {
+        console.error("Deactivate Account Error:", error);
+
+        res.status(500).json({
+            message: "Failed to deactivate account"
+        });
+    }
+};
 
 module.exports = {
     getProfile,
     updateProfile,
     changePassword,
-    deleteAccount
+    deleteAccount,
+    deactivateAccount
 };
+    
