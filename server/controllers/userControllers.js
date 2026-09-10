@@ -10,18 +10,16 @@ const getProfile = async (req, res) => {
                 message: "User not found"
             });
         }
+        const {
+    successResponse,
+    errorResponse
+      } = require("../utils/apiResponse");
 
-        res.status(200).json({
-            message: "Profile fetched successfully",
-            user
-        });
+        successResponse(res, 200, "Profile fetched successfully", user);
         
 
     } catch (error) {
-        res.status(500).json({
-            message: "Server error",
-            error: error.message
-        });
+        errorResponse(res, 500, "Server error");
     }
 };
 const updateProfile = async (req, res) => {
