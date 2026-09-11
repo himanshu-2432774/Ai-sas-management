@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-
+const AppError = require("./utils/AppError");
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -73,7 +73,14 @@ app.get("/", (req, res) => {
     });
 });
 
-
+app.use((req, res, next) => {
+    next(
+        new AppError(
+            `Route not found: ${req.originalUrl}`,
+            404
+        )
+    );
+});
 // ======================
 // Error Handler
 // ======================
