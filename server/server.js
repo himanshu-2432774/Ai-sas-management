@@ -14,7 +14,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
+// add logger
+const logger = require("./middleware/loggerMiddleware");
+app.use(logger);
 
 // ======================
 // Rate Limiter
