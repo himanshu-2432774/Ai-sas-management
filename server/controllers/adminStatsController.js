@@ -52,7 +52,52 @@ const getAdminStats = async (req, res) => {
         });
     }
 };
+const getServiceStats = async (req, res) => {
+    try {
+        const stats = await Usage.aggregate([
+            {
+                $group: {
+                    _id: "$service",
+                    totalRequests: {
+                        $sum: 1
+                    },
+                    totalCreditsUsed: {
+                        $sum: "$creditsUsed"
+                    }
+                }
+            },
+            {
+                $sort: {
+                    totalRequests: -1
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    service: "$_id",
+                    totalRequests: 1,
+                    totalCreditsUsed: 1
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            message: "Service statistics fetched successfully",
+            data: stats
+        });
+
+    } catch (error) {
+        console.error("Service Stats Error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch service statistics"
+        });
+    }
+};
 
 module.exports = {
-    getAdminStats
+    getAdminStats,
+    getServiceStats
 };
