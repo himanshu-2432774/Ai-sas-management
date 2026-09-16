@@ -7,6 +7,7 @@ const usageSchema = new mongoose.Schema(
             ref: "User",
             required: true
         },
+        
 
         service: {
             type: String,
@@ -38,5 +39,9 @@ const usageSchema = new mongoose.Schema(
         timestamps: true
     }
 );
+usageSchema.index({
+    user: 1,
+    createdAt: -1
+});
 
 module.exports = mongoose.model("Usage", usageSchema);
