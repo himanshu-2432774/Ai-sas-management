@@ -6,7 +6,8 @@ const protect  = require("../middleware/authmiddleware.js");
 const adminOnly = require("../middleware/adminmiddleware.js");
 
 const {
-    getAdminStats
+    getAdminStats,
+    getServiceStats
 } = require("../controllers/adminStatsController");
 
 router.get(
@@ -14,6 +15,12 @@ router.get(
     protect,
     adminOnly,
     getAdminStats
+);
+router.get(
+    "/stats/services",
+    protect,
+    adminOnly,
+    getServiceStats
 );
 
 module.exports = router;
