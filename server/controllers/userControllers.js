@@ -2,9 +2,9 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id)
-            .select("-password");
-
+        const users = await User.find(filter)
+         .select("-password")
+         .sort({ createdAt: -1 });
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
