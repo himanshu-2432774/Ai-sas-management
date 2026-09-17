@@ -1,6 +1,8 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const helmet = require("helmet");
+
 const AppError = require("./utils/AppError");
 const connectDB = require("./config/db");
 
@@ -13,6 +15,7 @@ const app = express();
 // ======================
 
 app.use(cors());
+app.use(helmet());
 app.use(express.json());
 // add logger
 const logger = require("./middleware/loggerMiddleware");
