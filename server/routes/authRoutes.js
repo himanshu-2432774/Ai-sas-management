@@ -13,6 +13,10 @@ const {
 } = require("../controllers/authControllers.js");
 
 const protect = require("../middleware/authmiddleware.js");
+//validataion middleware
+const {
+    validateRequiredFields
+} = require("../middleware/validateMiddleware");
 
 
 // Resend verification
@@ -52,7 +56,8 @@ router.post(
  *         description: Invalid request
  */
 
-router.post("/register", register);
+//apply validation middleware to check  for required fields 
+router.post("/register", validateRequiredFields(["name", "email", "password"]), register);
 
 
 // Forgot password
@@ -60,7 +65,7 @@ router.post("/forgot-password", forgotPassword);
 
 
 // Reset password
-router.post("/reset-password", resetPassword);
+router.post("/reset-password/:token", resetPassword);
 
 /**
  * @swagger
