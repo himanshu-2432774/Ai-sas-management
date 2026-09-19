@@ -97,7 +97,11 @@ router.post("/reset-password/:token", resetPassword);
  */
 
 // login user 
-router.post("/login", login);
+router.post(
+    "/login",
+    validateRequiredFields(["email", "password"]),
+    login
+);
 
 
 // Get current user
