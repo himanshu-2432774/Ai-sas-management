@@ -2,8 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 
-const protect  = require("../middleware/authmiddleware.js");
-const adminOnly = require("../middleware/adminmiddleware.js");
+const protect = require("../middleware/authmiddleware");
+const adminOnly = require("../middleware/adminmiddleware");
 
 const {
     getAdminStats,
@@ -16,6 +16,7 @@ router.get(
     adminOnly,
     getAdminStats
 );
+
 router.get(
     "/stats/services",
     protect,
