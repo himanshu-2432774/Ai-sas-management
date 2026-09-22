@@ -264,6 +264,50 @@ const bulkDeactivateUsers = async (req, res) => {
         );
     }
 };
+const bulkActivateUsers = async (req, res) => {
+    try {
+        const { userIds } = req.body;
+
+        if (!Array.isArray(userIds) || userIds.length === 0) {
+            return errorResponse(
+                res,
+                400,
+                "userIds must be a non-empty array"
+            );
+        }
+
+        const result = await User.updateMany(
+            {
+                _id: { $in: userIds },
+                role: { $ne: "admin" }
+            },
+            {
+                $set: {
+                    isActive: true
+                }
+            }
+        );
+
+        return successResponse(
+            res,
+            200,
+            "Users activated successfully",
+            {
+                matchedCount: result.matchedCount,
+                modifiedCount: result.modifiedCount
+            }
+        );
+
+    } catch (error) {
+        console.error("Bulk Activate Error:", error);
+
+        return errorResponse(
+            res,
+            500,
+            "Server error"
+        );
+    }
+};
 
 
 module.exports = {
