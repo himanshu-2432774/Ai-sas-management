@@ -1,4 +1,8 @@
 const User = require("../models/User");
+const {
+    successResponse,
+    errorResponse
+} = require("../utils/apiResponse");
 
 
 // Get all users
@@ -7,60 +11,120 @@ const getAllUsers = async (req, res) => {
         const {
             search = "",
             role,
+            plan,
+            isActive,
+            sortBy = "createdAt",
+            order = "desc",
             page = 1,
             limit = 10
         } = req.query;
 
-        const skip = (page - 1) * limit;
+        // Pagination
+        const currentPage = Math.max(Number(page), 1);
+
+        const perPage = Math.min(
+            Math.max(Number(limit), 1),
+            50
+        );
 
         const filter = {};
 
         // Search by name or email
-        if (search) {
+        if (search.trim()) {
             filter.$or = [
                 {
                     name: {
-                        $regex: search,
+                        $regex: search.trim(),
                         $options: "i"
                     }
                 },
                 {
                     email: {
-                        $regex: search,
+                        $regex: search.trim(),
                         $options: "i"
                     }
                 }
             ];
         }
 
-        // Filter by role
+        // Role filter
         if (role) {
             filter.role = role;
         }
 
-        const users = await User.find(filter)
-            .select("-password")
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(Number(limit));
+        // Plan filter
+        if (plan) {
+            filter.plan = plan;
+        }
 
+        // Active status filter
+        if (isActive !== undefined) {
+            filter.isActive = isActive === "true";
+        }
+
+        // Sorting
+        const allowedSortFields = [
+            "name",
+            "email",
+            "createdAt",
+            "updatedAt",
+            "credits"
+        ];
+
+        const selectedSortField = allowedSortFields.includes(sortBy)
+            ? sortBy
+            : "createdAt";
+
+        const sortOrder = order === "asc" ? 1 : -1;
+
+        const sortOption = {
+            [selectedSortField]: sortOrder
+        };
+
+        // Total users
         const totalUsers = await User.countDocuments(filter);
 
-        res.status(200).json({
-            message: "Users fetched successfully",
-            totalUsers,
-            currentPage: Number(page),
-            totalPages: Math.ceil(totalUsers / limit),
-            users
-        });
+        // Get users
+        const users = await User.find(filter)
+            .select(
+                "-password -emailVerificationToken -emailVerificationExpire -resetPasswordToken -resetPasswordExpire"
+            )
+            .sort(sortOption)
+            .skip((currentPage - 1) * perPage)
+            .limit(perPage);
+
+        // Total pages
+        const totalPages = Math.ceil(
+            totalUsers / perPage
+        );
+
+        return successResponse(
+            res,
+            200,
+            "Users fetched successfully",
+            {
+                users,
+                pagination: {
+                    currentPage,
+                    limit: perPage,
+                    totalUsers,
+                    totalPages
+                },
+                sorting: {
+                    sortBy: selectedSortField,
+                    order: order === "asc" ? "asc" : "desc"
+                }
+            }
+        );
 
     } catch (error) {
         console.error("Get Users Error:", error);
 
-        res.status(500).json({
-            message: "Failed to fetch users",
-            error: error.message
-        });
+        return errorResponse(
+            res,
+            500,
+            "Server error"
+        );
     }
 };
 // Get single user
@@ -70,21 +134,22 @@ const getUserById = async (req, res) => {
             .select("-password");
 
         if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
+            return errorResponse(res, 404, "User not found");
         }
 
-        res.status(200).json({
-            message: "User fetched successfully",
+        return successResponse(
+            res,
+            200,
+            "User fetched successfully",
             user
-        });
+        );
 
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to fetch user",
-            error: error.message
-        });
+        return errorResponse(
+            res,
+            500,
+            "Failed to fetch user"
+        );
     }
 };
 
@@ -95,38 +160,37 @@ const updateUserRole = async (req, res) => {
         const { role } = req.body;
 
         if (!["user", "admin"].includes(role)) {
-            return res.status(400).json({
-                message: "Invalid role"
-            });
+            return errorResponse(res, 400, "Invalid role");
         }
 
         const user = await User.findById(req.params.id);
 
         if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
+            return errorResponse(res, 404, "User not found");
         }
 
         user.role = role;
 
         await user.save();
 
-        res.status(200).json({
-            message: "User role updated successfully",
-            user: {
+        return successResponse(
+            res,
+            200,
+            "User role updated successfully",
+            {
                 id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role
             }
-        });
+        );
 
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to update user role",
-            error: error.message
-        });
+        return errorResponse(
+            res,
+            500,
+            "Failed to update user role"
+        );
     }
 };
 
@@ -137,22 +201,67 @@ const deleteUser = async (req, res) => {
         const user = await User.findById(req.params.id);
 
         if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
+            return errorResponse(res, 404, "User not found");
         }
 
         await User.findByIdAndDelete(req.params.id);
 
-        res.status(200).json({
-            message: "User deleted successfully"
-        });
+        return successResponse(
+            res,
+            200,
+            "User deleted successfully"
+        );
 
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to delete user",
-            error: error.message
-        });
+        return errorResponse(
+            res,
+            500,
+            "Failed to delete user"
+        );
+    }
+};
+const bulkDeactivateUsers = async (req, res) => {
+    try {
+        const { userIds } = req.body;
+
+        if (!Array.isArray(userIds) || userIds.length === 0) {
+            return errorResponse(
+                res,
+                400,
+                "userIds must be a non-empty array"
+            );
+        }
+
+        const result = await User.updateMany(
+            {
+                _id: { $in: userIds },
+                role: { $ne: "admin" }
+            },
+            {
+                $set: {
+                    isActive: false
+                }
+            }
+        );
+
+        return successResponse(
+            res,
+            200,
+            "Users deactivated successfully",
+            {
+                matchedCount: result.matchedCount,
+                modifiedCount: result.modifiedCount
+            }
+        );
+
+    } catch (error) {
+        console.error("Bulk Deactivate Error:", error);
+
+        return errorResponse(
+            res,
+            500,
+            "Server error"
+        );
     }
 };
 
