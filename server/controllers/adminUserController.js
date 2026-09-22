@@ -308,6 +308,78 @@ const bulkActivateUsers = async (req, res) => {
         );
     }
 };
+const bulkUpdatePlan = async (req, res) => {
+    try {
+        const { userIds, plan } = req.body;
+
+        if (!Array.isArray(userIds) || userIds.length === 0) {
+            return errorResponse(
+                res,
+                400,
+                "userIds must be a non-empty array"
+            );
+        }
+
+        const allowedPlans = [
+            "free",
+            "basic",
+            "pro"
+        ];
+
+        if (!allowedPlans.includes(plan)) {
+            return errorResponse(
+                res,
+                400,
+                "Invalid plan"
+            );
+        }
+
+        const planCredits = {
+            free: 10,
+            basic: 50,
+            pro: 100
+        };
+
+        const result = await User.updateMany(
+            {
+                _id: { $in: userIds },
+                role: { $ne: "admin" }
+            },
+            {
+                $set: {
+                    plan: plan,
+                    credits: planCredits[plan],
+                    subscriptionStatus: "active",
+                    subscriptionStartDate: new Date(),
+                    subscriptionEndDate: new Date(
+                        Date.now() + 30 * 24 * 60 * 60 * 1000
+                    )
+                }
+            }
+        );
+
+        return successResponse(
+            res,
+            200,
+            "Users plan updated successfully",
+            {
+                plan,
+                credits: planCredits[plan],
+                matchedCount: result.matchedCount,
+                modifiedCount: result.modifiedCount
+            }
+        );
+
+    } catch (error) {
+        console.error("Bulk Plan Update Error:", error);
+
+        return errorResponse(
+            res,
+            500,
+            "Server error"
+        );
+    }
+};
 
 
 module.exports = {
