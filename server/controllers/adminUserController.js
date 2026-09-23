@@ -387,5 +387,8 @@ module.exports = {
     getAllUsers,
     getUserById,
     updateUserRole,
-    deleteUser
+    deleteUser,
+    bulkDeactivateUsers,
+    bulkActivateUsers,
+    bulkUpdatePlan
 };
