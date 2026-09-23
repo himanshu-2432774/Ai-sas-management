@@ -9,9 +9,11 @@ const {
     getAllUsers,
     getUserById,
     updateUserRole,
-    deleteUser
+    deleteUser,
+    bulkDeactivateUsers,
+    bulkActivateUsers,
+    bulkUpdatePlan
 } = require("../controllers/adminUserController");
-
 /**
  * @swagger
  * /api/admin/users:
@@ -171,6 +173,26 @@ router.delete(
     protect,
     adminOnly,
     deleteUser
+);
+router.put(
+    "/users/bulk/deactivate",
+    protect,
+    adminOnly,
+    bulkDeactivateUsers
+);
+
+router.put(
+    "/users/bulk/activate",
+    protect,
+    adminOnly,
+    bulkActivateUsers
+);
+
+router.put(
+    "/users/bulk/plan",
+    protect,
+    adminOnly,
+    bulkUpdatePlan
 );
 
 
