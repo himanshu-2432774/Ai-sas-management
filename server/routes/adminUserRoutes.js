@@ -174,12 +174,80 @@ router.delete(
     adminOnly,
     deleteUser
 );
+/**
+ * @swagger
+ * /api/admin/users/bulk/deactivate:
+ *   put:
+ *     summary: Deactivate multiple users
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userIds
+ *             properties:
+ *               userIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Users deactivated successfully
+ *       400:
+ *         description: Invalid user IDs
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Admin access required
+ *       500:
+ *         description: Internal server error
+ */
 router.put(
     "/users/bulk/deactivate",
     protect,
     adminOnly,
     bulkDeactivateUsers
 );
+/**
+ * @swagger
+ * /api/admin/users/bulk/activate:
+ *   put:
+ *     summary: Activate multiple users
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userIds
+ *             properties:
+ *               userIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Users activated successfully
+ *       400:
+ *         description: Invalid user IDs
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Admin access required
+ *       500:
+ *         description: Internal server error
+ */
 
 router.put(
     "/users/bulk/activate",
