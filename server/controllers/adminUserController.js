@@ -263,6 +263,38 @@ const restoreUser = async (req, res) => {
         );
     }
 };
+const getDeletedUsers = async (req, res) => {
+    try {
+        const users = await User.find({
+            isDeleted: true
+        })
+            .select(
+                "-password -emailVerificationToken -emailVerificationExpire -resetPasswordToken -resetPasswordExpire"
+            )
+            .sort({
+                deletedAt: -1
+            });
+
+        return successResponse(
+            res,
+            200,
+            "Deleted users fetched successfully",
+            users
+        );
+
+    } catch (error) {
+        console.error(
+            "Get Deleted Users Error:",
+            error
+        );
+
+        return errorResponse(
+            res,
+            500,
+            "Server error"
+        );
+    }
+};
 
 
 // Delete user
