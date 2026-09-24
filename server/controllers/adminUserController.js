@@ -563,5 +563,7 @@ module.exports = {
     deleteUser,
     bulkDeactivateUsers,
     bulkActivateUsers,
-    bulkUpdatePlan
+    bulkUpdatePlan,
+    restoreUser,
+    getDeletedUsers
 };
