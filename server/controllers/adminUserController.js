@@ -1,4 +1,6 @@
 const User = require("../models/User");
+const AuditLog = require("../models/AuditLog");
+const createAuditLog = require("../utils/createAuditLog");
 const {
     successResponse,
     errorResponse
@@ -380,8 +382,6 @@ const bulkUpdatePlan = async (req, res) => {
         );
     }
 };
-
-
 
 module.exports = {
     getAllUsers,
