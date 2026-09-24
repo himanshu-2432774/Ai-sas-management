@@ -245,6 +245,16 @@ const bulkDeactivateUsers = async (req, res) => {
                 }
             }
         );
+        await createAuditLog({
+             admin: req.user.id,
+            action: "BULK_DEACTIVATE_USERS",
+             details: {
+            userIds,
+           matchedCount: result.matchedCount,
+           modifiedCount: result.modifiedCount
+        },
+       ipAddress: req.ip
+     });
 
         return successResponse(
             res,
@@ -289,6 +299,16 @@ const bulkActivateUsers = async (req, res) => {
                 }
             }
         );
+        await createAuditLog({
+    admin: req.user.id,
+    action: "BULK_ACTIVATE_USERS",
+    details: {
+        userIds,
+        matchedCount: result.matchedCount,
+        modifiedCount: result.modifiedCount
+    },
+    ipAddress: req.ip
+});
 
         return successResponse(
             res,
@@ -359,6 +379,18 @@ const bulkUpdatePlan = async (req, res) => {
                 }
             }
         );
+        await createAuditLog({
+    admin: req.user.id,
+    action: "BULK_UPDATE_PLAN",
+    details: {
+        userIds,
+        plan,
+        credits: planCredits[plan],
+        matchedCount: result.matchedCount,
+        modifiedCount: result.modifiedCount
+    },
+    ipAddress: req.ip
+});
 
         return successResponse(
             res,
