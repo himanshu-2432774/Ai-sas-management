@@ -12,7 +12,9 @@ const {
     deleteUser,
     bulkDeactivateUsers,
     bulkActivateUsers,
-    bulkUpdatePlan
+    bulkUpdatePlan,
+    restoreUser,
+    getDeletedUsers
 } = require("../controllers/adminUserController");
 /**
  * @swagger
@@ -152,6 +154,20 @@ router.get(
  *       500:
  *         description: Internal server error
  */
+router.get(
+    "/users/deleted",
+    protect,
+    adminOnly,
+    getDeletedUsers
+);
+
+router.put(
+    "/users/:id/restore",
+    protect,
+    adminOnly,
+    restoreUser
+);
+
 router.get(
     "/users/:id",
     protect,
