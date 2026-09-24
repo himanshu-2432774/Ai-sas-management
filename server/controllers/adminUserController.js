@@ -205,6 +205,64 @@ const updateUserRole = async (req, res) => {
         );
     }
 };
+// restore user
+const restoreUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.findById(id);
+
+        if (!user) {
+            return errorResponse(
+                res,
+                404,
+                "User not found"
+            );
+        }
+
+        if (!user.isDeleted) {
+            return errorResponse(
+                res,
+                400,
+                "User is not deleted"
+            );
+        }
+
+        user.isDeleted = false;
+        user.deletedAt = null;
+
+        await user.save();
+
+        await createAuditLog({
+            admin: req.user.id,
+            action: "RESTORE_USER",
+            targetUser: id,
+            details: {
+                name: user.name,
+                email: user.email
+            },
+            ipAddress: req.ip
+        });
+
+        return successResponse(
+            res,
+            200,
+            "User restored successfully"
+        );
+
+    } catch (error) {
+        console.error(
+            "Restore User Error:",
+            error
+        );
+
+        return errorResponse(
+            res,
+            500,
+            "Server error"
+        );
+    }
+};
 
 
 // Delete user
