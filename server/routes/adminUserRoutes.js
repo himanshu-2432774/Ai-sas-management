@@ -160,12 +160,6 @@ router.get(
 );
 
 
-router.put(
-    "/users/:id/role",
-    protect,
-    adminOnly,
-    updateUserRole
-);
 
 
 router.delete(
@@ -262,6 +256,14 @@ router.put(
     adminOnly,
     bulkUpdatePlan
 );
+router.put(
+    "/users/:id/role",
+    protect,
+    adminOnly,
+    updateUserRole
+);
+
+
 
 
 module.exports = router;
