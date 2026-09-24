@@ -98,7 +98,12 @@ const errorHandler = require("./middleware/errorMiddleware");
 
 app.use(errorHandler);
 
-
+//audit routes
+const auditLogRoutes = require("./routes/auditLogRoutes");
+app.use(
+    "/api/admin/audit",
+    auditLogRoutes
+);
 
 
 // ======================
