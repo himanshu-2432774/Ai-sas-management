@@ -174,7 +174,16 @@ const updateUserRole = async (req, res) => {
         user.role = role;
 
         await user.save();
-
+        await createAuditLog({
+    admin: req.user.id,
+    action: "UPDATE_USER_ROLE",
+    targetUser: id,
+    details: {
+        oldRole,
+        newRole: role
+    },
+    ipAddress: req.ip
+});
         return successResponse(
             res,
             200,
