@@ -30,6 +30,7 @@ const getAllUsers = async (req, res) => {
         );
 
         const filter = {};
+        filter.isDeleted = false;
 
         // Search by name or email
         if (search.trim()) {
@@ -209,13 +210,49 @@ const updateUserRole = async (req, res) => {
 // Delete user
 const deleteUser = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const { id } = req.params;
+
+        const user = await User.findById(id);
 
         if (!user) {
-            return errorResponse(res, 404, "User not found");
+            return errorResponse(
+                res,
+                404,
+                "User not found"
+            );
         }
 
-        await User.findByIdAndDelete(req.params.id);
+        if (user.role === "admin") {
+            return errorResponse(
+                res,
+                403,
+                "Admin user cannot be deleted"
+            );
+        }
+
+        if (user.isDeleted) {
+            return errorResponse(
+                res,
+                400,
+                "User is already deleted"
+            );
+        }
+
+        user.isDeleted = true;
+        user.deletedAt = new Date();
+
+        await user.save();
+
+        await createAuditLog({
+            admin: req.user.id,
+            action: "DELETE_USER",
+            targetUser: id,
+            details: {
+                name: user.name,
+                email: user.email
+            },
+            ipAddress: req.ip
+        });
 
         return successResponse(
             res,
@@ -224,10 +261,15 @@ const deleteUser = async (req, res) => {
         );
 
     } catch (error) {
+        console.error(
+            "Delete User Error:",
+            error
+        );
+
         return errorResponse(
             res,
             500,
-            "Failed to delete user"
+            "Server error"
         );
     }
 };
