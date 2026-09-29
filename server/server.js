@@ -4,6 +4,9 @@ const cors = require("cors");
 const helmet = require("helmet");
 
 const AppError = require("./utils/AppError");
+const {
+    connectRedis
+} = require("./config/redis");
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -71,6 +74,10 @@ app.use("/api/admin", adminStatsRoutes);
 const adminPlanRoutes = require("./routes/adminPlanRoutes");
 app.use("/api/admin", adminPlanRoutes);
 
+// Audit routes
+const auditLogRoutes = require("./routes/auditLogRoutes");
+app.use("/api/admin/audit", auditLogRoutes);
+
 
 // ======================
 // Home Route
@@ -98,14 +105,6 @@ const errorHandler = require("./middleware/errorMiddleware");
 
 app.use(errorHandler);
 
-//audit routes
-const auditLogRoutes = require("./routes/auditLogRoutes");
-app.use(
-    "/api/admin/audit",
-    auditLogRoutes
-);
-
-
 // ======================
 // Server
 // ======================
@@ -114,6 +113,7 @@ const PORT = process.env.PORT || 5000;
 
 connectDB()
     .then(() => {
+        connectRedis(); // Connect to Redis
         app.listen(PORT, () => {
             console.log(`Server Running On Port ${PORT}`);
         });
