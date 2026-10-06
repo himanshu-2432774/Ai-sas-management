@@ -1,7 +1,9 @@
 const express = require("express");
 
 const router = express.Router();
-
+const cacheMiddleware = require(
+    "../middleware/cacheMiddleware"
+);
 const protect = require("../middleware/authmiddleware.js");
 const adminOnly = require("../middleware/adminmiddleware.js");
 
@@ -116,6 +118,7 @@ router.get(
     "/users",
     protect,
     adminOnly,
+    cacheMiddleware(60),
     getAllUsers
 );
 
