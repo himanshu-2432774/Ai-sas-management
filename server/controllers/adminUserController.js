@@ -5,7 +5,9 @@ const {
     successResponse,
     errorResponse
 } = require("../utils/apiResponse");
-
+const {
+    clearUserCache
+} = require("../utils/cacheUtils");
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -232,6 +234,7 @@ const restoreUser = async (req, res) => {
         user.deletedAt = null;
 
         await user.save();
+        await clearUserCache();
 
         await createAuditLog({
             admin: req.user.id,
@@ -332,6 +335,7 @@ const deleteUser = async (req, res) => {
         user.deletedAt = new Date();
 
         await user.save();
+        await clearUserCache();
 
         await createAuditLog({
             admin: req.user.id,
@@ -386,6 +390,7 @@ const bulkDeactivateUsers = async (req, res) => {
                 }
             }
         );
+        await clearUserCache();
         await createAuditLog({
              admin: req.user.id,
             action: "BULK_DEACTIVATE_USERS",
@@ -440,6 +445,7 @@ const bulkActivateUsers = async (req, res) => {
                 }
             }
         );
+        await clearUserCache();
         await createAuditLog({
     admin: req.user.id,
     action: "BULK_ACTIVATE_USERS",
@@ -520,6 +526,7 @@ const bulkUpdatePlan = async (req, res) => {
                 }
             }
         );
+        await clearUserCache();
         await createAuditLog({
     admin: req.user.id,
     action: "BULK_UPDATE_PLAN",
