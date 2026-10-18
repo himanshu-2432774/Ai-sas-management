@@ -3,13 +3,13 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const helmet = require("helmet");
 
+dotenv.config();
+
 const AppError = require("./utils/AppError");
 const {
     connectRedis
 } = require("./config/redis");
 const connectDB = require("./config/db");
-
-dotenv.config();
 
 const app = express();
 
