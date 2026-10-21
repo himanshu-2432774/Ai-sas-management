@@ -19,16 +19,18 @@ const app = express();
 
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL
+        origin: process.env.FRONTEND_URL,
+        exposedHeaders: ["X-Request-ID"]
     })
 );
 app.use(helmet());
+
+const requestIdMiddleware = require("./middleware/requestIDMiddleware");
+app.use(requestIdMiddleware);
+
 app.use(express.json({
     limit: "10kb"
 }));
-
-const requestIdMiddleware = require("./middleware/requestIdMiddleware");
-app.use(requestIdMiddleware);
 
 const performanceMiddleware = require("./middleware/performanceMiddleware");
 app.use(performanceMiddleware);
