@@ -24,7 +24,8 @@
     "openai": "^7.9.0",
     "redis": "^6.2.1",
     "swagger-jsdoc": "^6.3.0",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^14.0.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
