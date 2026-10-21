@@ -77,8 +77,8 @@ app.use("/api/admin", adminPlanRoutes);
 // Audit routes
 const auditLogRoutes = require("./routes/auditLogRoutes");
 app.use("/api/admin/audit", auditLogRoutes);
-
-
+const cacheHealthRoutes = require("./routes/cacheHealthRoutes");
+app.use("/api/admin/cache", cacheHealthRoutes);
 // ======================
 // Home Route
 // ======================
