@@ -26,6 +26,13 @@ app.use(helmet());
 app.use(express.json({
     limit: "10kb"
 }));
+
+const requestIdMiddleware = require("./middleware/requestIdMiddleware");
+app.use(requestIdMiddleware);
+
+const performanceMiddleware = require("./middleware/performanceMiddleware");
+app.use(performanceMiddleware);
+
 // add logger
 const logger = require("./middleware/loggerMiddleware");
 app.use(logger);
@@ -79,6 +86,8 @@ const auditLogRoutes = require("./routes/auditLogRoutes");
 app.use("/api/admin/audit", auditLogRoutes);
 const cacheHealthRoutes = require("./routes/cacheHealthRoutes");
 app.use("/api/admin/cache", cacheHealthRoutes);
+// register request  id middleware
+
 // ======================
 // Home Route
 // ======================
@@ -97,6 +106,7 @@ app.use((req, res, next) => {
         )
     );
 });
+
 // ======================
 // Error Handler
 // ======================
