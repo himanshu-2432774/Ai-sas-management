@@ -39,6 +39,9 @@ app.use(performanceMiddleware);
 const logger = require("./middleware/loggerMiddleware");
 app.use(logger);
 
+const healthRoutes = require("./routes/HealthRoutes");
+app.use("/api/health", healthRoutes);
+
 // ======================
 // Rate Limiter
 // ======================
