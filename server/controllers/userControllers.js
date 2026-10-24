@@ -167,7 +167,7 @@ const changePassword = async (req, res) => {
         return errorResponse(
             res,
             500,
-            "Failed to change password"
+            "server error"
         );
     }
 };
@@ -239,7 +239,7 @@ const deactivateAccount = async (req, res) => {
         return errorResponse(
             res,
             500,
-            "Failed to deactivate account"
+            "server error"
         );
     }
 };

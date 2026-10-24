@@ -2,6 +2,12 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
+const { logEmailDeliveryFailure } = require("../utils/emailDeliveryError");
+const {
+    createVerificationToken,
+    hashVerificationToken
+} = require("../utils/emailVerificationToken");
 
 const {
     successResponse,
@@ -154,7 +160,8 @@ const register = async (req, res) => {
             );
         }
 
-        const userExists = await User.findOne({ email });
+        const normalizedEmail = email.trim().toLowerCase();
+        const userExists = await User.findOne({ email: normalizedEmail });
 
         if (userExists) {
             return errorResponse(
@@ -170,16 +177,32 @@ const register = async (req, res) => {
         );
 
         const user = await User.create({
-            name,
-            email,
+            name: name.trim(),
+            email: normalizedEmail,
             password: hashedPassword
         });
+
+        const verification = createVerificationToken();
+        user.emailVerificationToken = verification.tokenHash;
+        user.emailVerificationExpire = verification.expiresAt;
+        await user.save();
+
+        let verificationEmailSent = false;
+        try {
+            await sendVerificationEmail(user, verification.token);
+            verificationEmailSent = true;
+        } catch (error) {
+            logEmailDeliveryFailure("signup verification", error);
+            // Keep the account and token so the user can retry via resend.
+        }
 
         return successResponse(
             res,
             201,
-            "User Registered Successfully",
-            user
+            verificationEmailSent
+                ? "Account created. Check your email to verify your account."
+                : "Account created, but the verification email could not be sent. Check the server email configuration or try resending later.",
+            { verificationEmailSent }
         );
 
     } catch (error) {
@@ -214,7 +237,7 @@ const login = async (req, res) => {
         }
 
         // Find user
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: email.trim().toLowerCase() });
 
         if (!user) {
             return errorResponse(
@@ -295,7 +318,7 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
-            .select("-password");
+            .select("-password -emailVerificationToken -emailVerificationExpire -resetPasswordToken -resetPasswordExpire");
 
         if (!user) {
             return errorResponse(
@@ -339,7 +362,7 @@ const resendVerification = async (req, res) => {
             );
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: email.trim().toLowerCase() });
 
         if (!user) {
             return errorResponse(
@@ -357,32 +380,31 @@ const resendVerification = async (req, res) => {
             );
         }
 
-        const verificationToken = crypto
-            .randomBytes(32)
-            .toString("hex");
-
-        user.emailVerificationToken =
-            verificationToken;
-
-        user.emailVerificationExpire =
-            new Date(Date.now() + 15 * 60 * 1000);
+        const verification = createVerificationToken();
+        user.emailVerificationToken = verification.tokenHash;
+        user.emailVerificationExpire = verification.expiresAt;
 
         await user.save();
+
+        try {
+            await sendVerificationEmail(user, verification.token);
+        } catch (error) {
+            logEmailDeliveryFailure("resend verification", error);
+            return errorResponse(
+                res,
+                503,
+                "Verification email could not be sent. Check the server email configuration and try again later."
+            );
+        }
 
         return successResponse(
             res,
             200,
-            "Verification token generated successfully",
-            {
-                verificationToken
-            }
+            "Verification email sent. Check your inbox."
         );
 
     } catch (error) {
-        console.error(
-            "Resend Verification Error:",
-            error
-        );
+        console.error("Resend verification request failed.");
 
         return errorResponse(
             res,
@@ -408,12 +430,32 @@ const verifyEmail = async (req, res) => {
             );
         }
 
-        const user = await User.findOne({
-            emailVerificationToken: token,
-            emailVerificationExpire: {
-                $gt: new Date()
+        if (!/^[a-f0-9]{64}$/i.test(token)) {
+            return errorResponse(
+                res,
+                400,
+                "Invalid or expired verification token"
+            );
+        }
+
+        const user = await User.findOneAndUpdate(
+            {
+                emailVerificationToken: hashVerificationToken(token),
+                emailVerificationExpire: {
+                    $gt: new Date()
+                }
+            },
+            {
+                $set: {
+                    isVerified: true,
+                    emailVerificationToken: null,
+                    emailVerificationExpire: null
+                }
+            },
+            {
+                returnDocument: "after"
             }
-        });
+        );
 
         if (!user) {
             return errorResponse(
@@ -423,13 +465,6 @@ const verifyEmail = async (req, res) => {
             );
         }
 
-        user.isVerified = true;
-
-        user.emailVerificationToken = null;
-        user.emailVerificationExpire = null;
-
-        await user.save();
-
         return successResponse(
             res,
             200,
@@ -437,10 +472,7 @@ const verifyEmail = async (req, res) => {
         );
 
     } catch (error) {
-        console.error(
-            "Verify Email Error:",
-            error
-        );
+        console.error("Email verification request failed.");
 
         return errorResponse(
             res,
@@ -449,6 +481,30 @@ const verifyEmail = async (req, res) => {
         );
     }
 };
+
+async function sendVerificationEmail(user, token) {
+    const frontendUrl = process.env.FRONTEND_URL;
+    if (!frontendUrl) {
+        throw new Error("Frontend URL is not configured.");
+    }
+
+    const verificationUrl = new URL("/verify-email", frontendUrl);
+    verificationUrl.searchParams.set("token", token);
+    const link = verificationUrl.toString();
+    const safeName = String(user.name || "there")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+    await sendEmail({
+        to: user.email,
+        subject: "Verify your AI SaaS Management account",
+        text: `Hello ${user.name || "there"},\n\nVerify your account using this link. It expires in 15 minutes and can only be used once:\n${link}\n\nIf you did not create this account, you can ignore this email.`,
+        html: `<p>Hello ${safeName},</p><p>Verify your account using the link below. It expires in 15 minutes and can only be used once.</p><p><a href="${link}">Verify email address</a></p><p>If you did not create this account, you can ignore this email.</p>`
+    });
+}
 
 
 // =====================================

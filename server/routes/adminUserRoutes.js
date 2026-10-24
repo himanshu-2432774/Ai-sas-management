@@ -16,7 +16,8 @@ const {
     bulkActivateUsers,
     bulkUpdatePlan,
     restoreUser,
-    getDeletedUsers
+    getDeletedUsers,
+    refreshUsersCache
 } = require("../controllers/adminUserController");
 /**
  * @swagger
@@ -280,6 +281,12 @@ router.put(
     protect,
     adminOnly,
     updateUserRole
+);
+router.delete(
+    "/users/cache",
+    protect,
+    adminOnly,
+    refreshUsersCache
 );
 
 

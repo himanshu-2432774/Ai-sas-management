@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 
+let mongoMemoryServer;
+
 const connectDB = async () => {
     try {
         const mongoUri = process.env.MONGO_URI;
@@ -15,11 +17,16 @@ const connectDB = async () => {
 
         console.log("MongoDB Connected");
     } catch (error) {
+        if (process.env.NODE_ENV === "production") {
+            console.error("MongoDB connection failed in production; refusing to use ephemeral storage.");
+            throw new Error("Production MongoDB connection failed.", { cause: error });
+        }
+
         console.log(`MongoDB connection failed: ${error.message}`);
         console.log("Falling back to an in-memory MongoDB instance for development...");
 
-        const mongod = await MongoMemoryServer.create();
-        const uri = mongod.getUri();
+        mongoMemoryServer = await MongoMemoryServer.create();
+        const uri = mongoMemoryServer.getUri();
 
         await mongoose.connect(uri, {
             dbName: process.env.DB_NAME || "ai_saas_dev",
@@ -29,4 +36,14 @@ const connectDB = async () => {
     }
 };
 
-module.exports = connectDB;
+const closeDB = async () => {
+    await mongoose.connection.close();
+
+    if (mongoMemoryServer) {
+        await mongoMemoryServer.stop();
+        mongoMemoryServer = undefined;
+        console.log("In-memory MongoDB server stopped.");
+    }
+};
+
+module.exports = { connectDB, closeDB };

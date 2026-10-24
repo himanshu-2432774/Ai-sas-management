@@ -15,8 +15,8 @@ router.post(
     "/generate",
     aiRateLimiter,
     protect,
-    checkSubscription,
     checkCredits,
+    checkSubscription,
     generateAI
 );
 
@@ -24,8 +24,8 @@ router.post(
     "/resume",
     aiRateLimiter,
     protect,
-    checkSubscription,
     checkCredits,
+    checkSubscription,
     generateResume
 );
 

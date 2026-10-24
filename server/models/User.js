@@ -79,12 +79,14 @@ deletedAt: {
 
         emailVerificationToken: {
             type: String,
-            default: null
+            default: null,
+            select: false
         },
 
         emailVerificationExpire: {
             type: Date,
-            default: null
+            default: null,
+            select: false
         },
 
         // Password Reset

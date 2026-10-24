@@ -3,9 +3,13 @@ const logger = (req, res, next) => {
 
     res.on("finish", () => {
         const duration = Date.now() - start;
+        const requestUrl = req.originalUrl.replace(
+            /\/api\/auth\/verify-email\/[^/?]+/i,
+            "/api/auth/verify-email/[redacted]"
+        );
 
         console.log(
-            `${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`
+            `${req.method} ${requestUrl} ${res.statusCode} ${duration}ms`
         );
     });
 

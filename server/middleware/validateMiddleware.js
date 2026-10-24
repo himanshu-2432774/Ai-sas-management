@@ -1,18 +1,24 @@
+
 const validateRequiredFields = (fields) => {
     return (req, res, next) => {
+        const missingFields = [];
 
-        for (const field of fields) {
-
+        fields.forEach((field) => {
             if (
-                !req.body[field] ||
-                typeof req.body[field] !== "string" ||
-                req.body[field].trim() === ""
+                req.body[field] === undefined ||
+                req.body[field] === null ||
+                String(req.body[field]).trim() === ""
             ) {
-                return res.status(400).json({
-                    success: false,
-                    message: `${field} is required`
-                });
+                missingFields.push(field);
             }
+        });
+
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Required fields are missing",
+                fields: missingFields
+            });
         }
 
         next();

@@ -1,4 +1,10 @@
-const successResponse = (res, statusCode, message, data = null) => {
+
+const successResponse = (
+    res,
+    statusCode,
+    message,
+    data = null
+) => {
     return res.status(statusCode).json({
         success: true,
         message,
@@ -6,10 +12,16 @@ const successResponse = (res, statusCode, message, data = null) => {
     });
 };
 
-const errorResponse = (res, statusCode, message) => {
+const errorResponse = (
+    res,
+    statusCode,
+    message,
+    data = null
+) => {
     return res.status(statusCode).json({
         success: false,
-        message
+        message,
+        data
     });
 };
 

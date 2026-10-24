@@ -1,5 +1,8 @@
 const express = require("express");
-
+const rateLimit = require("express-rate-limit");
+const {
+    validateRequiredFields
+} = require("../middleware/validateMiddleware");
 const router = express.Router();
 
 const {
@@ -13,15 +16,25 @@ const {
 } = require("../controllers/authControllers.js");
 
 const protect = require("../middleware/authmiddleware.js");
+
+const resendVerificationLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 3,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: "Too many verification email requests. Try again in 15 minutes."
+    }
+});
 //validataion middleware
-const {
-    validateRequiredFields
-} = require("../middleware/validateMiddleware");
+
 
 
 // Resend verification
 router.post(
     "/resend-verification",
+    resendVerificationLimiter,
     resendVerification
 );
 

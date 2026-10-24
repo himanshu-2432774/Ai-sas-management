@@ -1,19 +1,14 @@
-const transporter = require("../config/email");
+const createEmailTransport = require("../config/email");
 
-const sendEmail = async (to, subject, html) => {
-    try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to,
-            subject,
-            html
-        });
-
-        console.log("Email sent successfully");
-    } catch (error) {
-        console.error("Email Error:", error.message);
-        throw error;
-    }
-};
+async function sendEmail({ to, subject, text, html }) {
+    const transporter = createEmailTransport();
+    await transporter.sendMail({
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+        to,
+        subject,
+        text,
+        html
+    });
+}
 
 module.exports = sendEmail;

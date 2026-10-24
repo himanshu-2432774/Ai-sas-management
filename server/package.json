@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "test:smoke": "node scripts/smokeTest.js",
+    "test:auth": "node --test test/emailVerification.test.js",
     "start": "node server.js",
     "dev": "node dev.js"
   },

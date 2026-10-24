@@ -6,17 +6,22 @@ const performanceMiddleware = (req, res, next) => {
 
         const durationMs =
             Number(endTime - startTime) / 1_000_000;
+        const endpoint = req.originalUrl.replace(
+            /\/api\/auth\/verify-email\/[^/?]+/i,
+            "/api/auth/verify-email/[redacted]"
+        );
 
         console.log({
+            requestId: req.requestId,
             method: req.method,
-            endpoint: req.originalUrl,
+            endpoint,
             statusCode: res.statusCode,
             durationMs: Number(durationMs.toFixed(2))
         });
 
         if (durationMs > 1000) {
             console.warn(
-                `SLOW API: ${req.method} ${req.originalUrl} took ${durationMs.toFixed(2)} ms`
+                `SLOW API: ${req.method} ${endpoint} took ${durationMs.toFixed(2)} ms`
             );
         }
     });

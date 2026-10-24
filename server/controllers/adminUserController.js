@@ -2,11 +2,17 @@ const User = require("../models/User");
 const AuditLog = require("../models/AuditLog");
 const createAuditLog = require("../utils/createAuditLog");
 const {
+    getUsersCacheKey,
+    getCachedUsers,
+    setCachedUsers
+} = require("../utils/userCacheService");
+const {
     successResponse,
     errorResponse
 } = require("../utils/apiResponse");
 const {
-    clearUserCache
+    clearUserCache,
+    clearAdminUsersCache
 } = require("../utils/cacheUtils");
 
 // Get all users
@@ -22,7 +28,19 @@ const getAllUsers = async (req, res) => {
             page = 1,
             limit = 10
         } = req.query;
+     const cacheKey = getUsersCacheKey(req.query);
 
+try {
+    const cachedResponse = await getCachedUsers(cacheKey);
+
+    if (cachedResponse) {
+        console.log("Users API: CACHE HIT");
+
+        return res.status(200).json(cachedResponse);
+    }
+} catch (error) {
+    console.error("Cache read error:", error.message);
+}
         // Pagination
         const currentPage = Math.max(Number(page), 1);
 
@@ -103,24 +121,33 @@ const getAllUsers = async (req, res) => {
             totalUsers / perPage
         );
 
-        return successResponse(
-            res,
-            200,
-            "Users fetched successfully",
-            {
-                users,
-                pagination: {
-                    currentPage,
-                    limit: perPage,
-                    totalUsers,
-                    totalPages
-                },
-                sorting: {
-                    sortBy: selectedSortField,
-                    order: order === "asc" ? "asc" : "desc"
-                }
-            }
-        );
+        const responseData = {
+    success: true,
+    message: "Users fetched successfully",
+    data: {
+        users,
+        pagination: {
+            currentPage,
+            limit: perPage,
+            totalUsers,
+            totalPages
+        },
+        sorting: {
+            sortBy: selectedSortField,
+            order: order === "asc" ? "asc" : "desc"
+        }
+    }
+};
+
+try {
+    await setCachedUsers(cacheKey, responseData);
+} catch (error) {
+    console.error("Cache write error:", error.message);
+}
+
+console.log("Users API: CACHE MISS");
+
+return res.status(200).json(responseData);
 
     } catch (error) {
         console.error("Get Users Error:", error);
@@ -129,6 +156,26 @@ const getAllUsers = async (req, res) => {
             res,
             500,
             "Server error"
+        );
+    }
+};
+const refreshUsersCache = async (req, res) => {
+    try {
+        await clearUserCache();
+        await clearAdminUsersCache();
+
+        return successResponse(
+            res,
+            200,
+            "Admin users cache cleared successfully"
+        );
+    } catch (error) {
+        console.error("Cache refresh error:", error.message);
+
+        return errorResponse(
+            res,
+            500,
+            "Unable to clear admin users cache"
         );
     }
 };
@@ -177,6 +224,7 @@ const updateUserRole = async (req, res) => {
         user.role = role;
 
         await user.save();
+        await clearAdminUsersCache();
         await createAuditLog({
     admin: req.user.id,
     action: "UPDATE_USER_ROLE",
@@ -235,7 +283,7 @@ const restoreUser = async (req, res) => {
 
         await user.save();
         await clearUserCache();
-
+      await clearAdminUsersCache();
         await createAuditLog({
             admin: req.user.id,
             action: "RESTORE_USER",
@@ -336,6 +384,7 @@ const deleteUser = async (req, res) => {
 
         await user.save();
         await clearUserCache();
+        await clearAdminUsersCache();
 
         await createAuditLog({
             admin: req.user.id,
@@ -391,6 +440,7 @@ const bulkDeactivateUsers = async (req, res) => {
             }
         );
         await clearUserCache();
+        await clearAdminUsersCache();
         await createAuditLog({
              admin: req.user.id,
             action: "BULK_DEACTIVATE_USERS",
@@ -446,6 +496,7 @@ const bulkActivateUsers = async (req, res) => {
             }
         );
         await clearUserCache();
+        await clearAdminUsersCache();
         await createAuditLog({
     admin: req.user.id,
     action: "BULK_ACTIVATE_USERS",
@@ -527,6 +578,7 @@ const bulkUpdatePlan = async (req, res) => {
             }
         );
         await clearUserCache();
+        await clearAdminUsersCache();
         await createAuditLog({
     admin: req.user.id,
     action: "BULK_UPDATE_PLAN",
@@ -572,5 +624,6 @@ module.exports = {
     bulkActivateUsers,
     bulkUpdatePlan,
     restoreUser,
-    getDeletedUsers
+    getDeletedUsers,
+    refreshUsersCache
 };
