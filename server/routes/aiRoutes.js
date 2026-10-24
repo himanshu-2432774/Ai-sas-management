@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const protect = require("../middleware/authmiddleware.js");
-const checkCredits = require("../middleware/creditmiddleware.js");
+const checkCredits = require("../middleware/creditMiddleware.js");
 const checkSubscription = require("../middleware/subscriptionMiddleware.js");
-const aiRateLimiter = require("../middleware/airateLimiter.js");
+const aiRateLimiter = require("../middleware/aiRateLimiter.js");
 
 const {
     generateAI,
