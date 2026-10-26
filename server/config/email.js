@@ -30,11 +30,14 @@ function createEmailTransport() {
         : port === 465;
 
     return nodemailer.createTransport({
-        host,
-        port,
-        secure,
-        auth: { user, pass }
-    });
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    connectionTimeout: 15000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000
+});
 }
 
 module.exports = createEmailTransport;
