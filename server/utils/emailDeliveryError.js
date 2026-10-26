@@ -1,11 +1,16 @@
+
 function getEmailDeliveryFailureDetails(error) {
-    const code = typeof error?.code === "string" ? error.code : "";
+    const code =
+        typeof error?.code === "string" ? error.code : "";
+
     const smtpResponseCode = Number.isInteger(error?.responseCode)
         ? error.responseCode
         : undefined;
-    const command = typeof error?.command === "string"
-        ? error.command.toUpperCase()
-        : "";
+
+    const command =
+        typeof error?.command === "string"
+            ? error.command.toUpperCase()
+            : "";
 
     let category = "smtp_delivery_failed";
 
@@ -20,12 +25,15 @@ function getEmailDeliveryFailureDetails(error) {
     ) {
         category = "smtp_authentication_rejected";
     } else if (
-        code === "ECONNECTION" ||
-        code === "ECONNREFUSED" ||
-        code === "ETIMEDOUT" ||
-        code === "ENOTFOUND" ||
-        code === "EHOSTUNREACH" ||
-        code === "ESOCKET"
+        [
+            "ECONNECTION",
+            "ECONNREFUSED",
+            "ETIMEDOUT",
+            "ENOTFOUND",
+            "EHOSTUNREACH",
+            "ESOCKET",
+            "ETLS"
+        ].includes(code)
     ) {
         category = "smtp_connection_or_tls_failed";
     } else if (
@@ -46,12 +54,22 @@ function getEmailDeliveryFailureDetails(error) {
 
     return {
         category,
-        ...(smtpResponseCode === undefined ? {} : { smtpResponseCode })
+        ...(code ? { errorCode: code } : {}),
+        ...(smtpResponseCode !== undefined
+            ? { smtpResponseCode }
+            : {}),
+        ...(command ? { command } : {}),
+        ...(typeof error?.message === "string"
+            ? { errorMessage: error.message.slice(0, 300) }
+            : {})
     };
 }
 
 function logEmailDeliveryFailure(flow, error) {
-    console.error(`[email] ${flow} delivery failed`, getEmailDeliveryFailureDetails(error));
+    console.error(
+        `[email] ${flow} delivery failed`,
+        getEmailDeliveryFailureDetails(error)
+    );
 }
 
 module.exports = {
