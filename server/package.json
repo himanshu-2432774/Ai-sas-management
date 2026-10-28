@@ -25,6 +25,7 @@
     "nodemailer": "^10.0.1",
     "openai": "^7.9.0",
     "redis": "^6.2.1",
+    "resend": "^6.35.0",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
   },
